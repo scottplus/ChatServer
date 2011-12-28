@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 //ChatServer instance to hold host connections and synchronize data
 
-public class ChatServer extends Thread {
+public class ChatServer extends Thread implements ServerCallBack {
     ServerSocket hostServer;
     ArrayList<NetworkObject> connectedClients;
     boolean running = false;
@@ -21,8 +21,19 @@ public class ChatServer extends Thread {
     
     public void run() {
         //keep connections alive and add to the ArrayList
+        NetworkObject client = new NetworkObject(new Socket(), this);
         
-        
+    }
+    
+    
+    public void pushDataToClients(String message) {
+        //write the message to all clients in the arraylist
+    }
+    
+    private void listenForClients() {
+        while(true) {
+            sleep(50);
+        }
     }
     
     
@@ -53,4 +64,6 @@ public class ChatServer extends Thread {
         }
         
     }
+
+ 
 }
