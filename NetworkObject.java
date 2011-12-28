@@ -19,7 +19,7 @@ public class NetworkObject extends Thread {
     }
     
     public void run() {
-        
+        System.out.println("Hello World");
     }
     
 }
