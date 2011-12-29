@@ -15,9 +15,8 @@ import java.util.logging.Logger;
 
 public class Client implements Runnable {
 	Socket socket;
-        BufferedReader userInput;
-        DataInputStream input;
-        DataOutputStream output;
+        BufferedReader input, userInput;
+        BufferedWriter output;
         
         String message, username;
         
@@ -26,8 +25,8 @@ public class Client implements Runnable {
 	Client() throws IOException {
             //setup byte streams and connect to server
             socket = new Socket("localhost",8080);
-            input = new DataInputStream(socket.getInputStream());
-            output = new DataOutputStream(socket.getOutputStream());
+            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             
             //set up scanner to take user input
             userInput = new BufferedReader(new InputStreamReader(System.in));
@@ -39,29 +38,14 @@ public class Client implements Runnable {
                 System.out.println("Please enter your username: ");
                 username = userInput.readLine();
                 pushDataToServer(username);
-                
                 running = true;
-                readUserInput();
-                listenForMessages();
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
-        private void readUserInput() throws IOException {
-            while((message = userInput.readLine()) != null) {
-                pushDataToServer(message);
-            }
-        }
-        
-        private void listenForMessages() throws IOException {
-            while (running){
-                System.out.println(message); 
-            }
-        }
-        
         private void pushDataToServer(String message) throws IOException {
-            output.writeUTF(message);
+            output.write(message);
             output.flush();
         }
         
