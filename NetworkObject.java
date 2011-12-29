@@ -16,8 +16,8 @@ public class NetworkObject extends Thread {
     String message;
     Socket connectionToClient;
     ServerCallBack server;
-    BufferedReader input;
-    BufferedWriter output;
+    DataInputStream input;
+    DataOutputStream output;
     boolean running = false;
     
     NetworkObject(Socket connectionToClient, ServerCallBack server) throws IOException {
@@ -27,14 +27,14 @@ public class NetworkObject extends Thread {
         this.server = server;
         
         //byte streams
-        input = new BufferedReader(new InputStreamReader(connectionToClient.getInputStream()));
-        output = new BufferedWriter(new OutputStreamWriter(connectionToClient.getOutputStream()));
+        input = new DataInputStream(connectionToClient.getInputStream());
+        output = new DataOutputStream(connectionToClient.getOutputStream());
     }
     
     public void run() {
         try {
             //send the client a welcome message
-            username = input.readLine();
+            username = input.readUTF();
             message = "Welcome to the server, "+username+"!";
             writeToByteStream(message);
             
@@ -49,7 +49,7 @@ public class NetworkObject extends Thread {
     public void writeToByteStream(String message) throws IOException {
         //write to the connected client
         System.out.println("Writing data: "+message);
-        output.write(message);
+        output.writeUTF(message);
         output.flush();
     }
     
@@ -57,7 +57,7 @@ public class NetworkObject extends Thread {
         while(running) {
             System.out.println("Listening for messages");
             //listen for new messages, call back the server when a new message arrives
-            message = input.readLine();
+            message = input.readUTF();
             //assemble the message and send it to the server
             server.pushDataToClients(this.username+": "+this.message);
         }

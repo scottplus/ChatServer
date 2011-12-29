@@ -15,6 +15,8 @@ public class ChatServer extends Thread implements ServerCallBack {
     ArrayList<NetworkObject> connectedClients;
     boolean running = false;
     
+    int index = 0;
+    
     //CALLBACK INTERFACE METHODS
     
     public void serverControls(int command) {
@@ -38,6 +40,7 @@ public class ChatServer extends Thread implements ServerCallBack {
         while(running) {
             //add the client to the arraylist
             connectedClients.add(new NetworkObject(hostServer.accept(), this));
+            connectedClients.get(index).start(); index++;
             System.out.println("Client connected");
         }
     }

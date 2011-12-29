@@ -15,8 +15,9 @@ import java.util.logging.Logger;
 
 public class Client implements Runnable {
 	Socket socket;
-        BufferedReader input, userInput;
-        BufferedWriter output;
+        BufferedReader userInput;
+        InputStreamReader input;
+        DataOutputStream output;
         
         String message, username;
         
@@ -25,8 +26,8 @@ public class Client implements Runnable {
 	Client() throws IOException {
             //setup byte streams and connect to server
             socket = new Socket("localhost",8080);
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            input = new InputStreamReader(socket.getInputStream());
+            output = new DataOutputStream(socket.getOutputStream());
             
             //set up scanner to take user input
             userInput = new BufferedReader(new InputStreamReader(System.in));
@@ -38,6 +39,7 @@ public class Client implements Runnable {
                 System.out.println("Please enter your username: ");
                 username = userInput.readLine();
                 pushDataToServer(username);
+                
                 running = true;
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -45,7 +47,7 @@ public class Client implements Runnable {
         }
         
         private void pushDataToServer(String message) throws IOException {
-            output.write(message);
+            output.writeUTF(message);
             output.flush();
         }
         
