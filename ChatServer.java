@@ -1,5 +1,3 @@
-//package chatserver;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -17,7 +15,8 @@ public class ChatServer extends Thread implements ServerCallBack {
     
     ChatServer(InetAddress ip, int port, int numberOfConnections) throws IOException {
         //initialize the objects
-        hostServer = new ServerSocket(port, numberOfConnections, ip);       
+        hostServer = new ServerSocket(port, numberOfConnections, ip);   
+        connectedClients = new ArrayList<NetworkObject>();
     }
     
     public void run() {
