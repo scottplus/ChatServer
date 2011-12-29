@@ -1,3 +1,4 @@
+package chatserver;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
