@@ -1,11 +1,12 @@
-package chatserver;
-
+//package chatserver;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 //ChatServer instance to hold host connections and synchronize data
 
@@ -20,27 +21,35 @@ public class ChatServer extends Thread implements ServerCallBack {
     }
     
     public void run() {
-        //keep connections alive and add to the ArrayList
-        NetworkObject client = new NetworkObject(new Socket(), this);
+        try {
+            //keep connections alive and add to the ArrayList
+            running = true; System.out.println("Listening for clients");
+            listenForClients();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
     
     
     public void pushDataToClients(String message) {
         //write the message to all clients in the arraylist
-    }
-    
-    private void listenForClients() {
-        while(true) {
-            sleep(50);
+        try{
+            for(NetworkObject current : connectedClients) {
+                current.writeToByteStream(message);
+            }
+        } catch (IOException e) {
+            System.out.println(e);
         }
     }
     
-    
-    private void pushData() {
-        //write data to all network objects
-        for(NetworkObject client : connectedClients) {
-            
+    private void listenForClients() throws InterruptedException, IOException {
+        while(running) {
+            //add the client to the arraylist
+            connectedClients.add(new NetworkObject(hostServer.accept(), this));
+            System.out.println("Client connected");
         }
     }
     
@@ -50,7 +59,7 @@ public class ChatServer extends Thread implements ServerCallBack {
             if(args[0] != null && args[1] != null && args[2] != null) {
             
                 //convert the names 
-                InetAddress ip = InetAddress.getByAddress(args[0].getBytes());
+                InetAddress ip = InetAddress.getByName(args[0]);
                 int port = Integer.parseInt(args[1]);
                 int numberOfConnections = Integer.parseInt(args[2]);
 
@@ -60,6 +69,7 @@ public class ChatServer extends Thread implements ServerCallBack {
             }
         } catch (Exception e) {
             System.out.println("Failed to create the server instance... system exiting");
+            System.out.println(e);
             System.exit(1);
         }
         
