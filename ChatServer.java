@@ -24,6 +24,7 @@ public class ChatServer extends Thread implements ServerCallBack {
     
     public void pushDataToClients(String message) {
         //write the message to all clients in the arraylist
+        System.out.println("Pushing data: "+message);
         try{
             for(NetworkObject current : connectedClients) {
                 current.writeToByteStream(message);
@@ -65,17 +66,17 @@ public class ChatServer extends Thread implements ServerCallBack {
     public static void main(String[] args) {
         //EXAMPLE INPUT == "128.67.80.24" "8080" "1000"
         try {
-            if(args[0] != null && args[1] != null && args[2] != null) {
+           // if(args[0] != null && args[1] != null && args[2] != null) {
             
                 //convert the names 
-                InetAddress ip = InetAddress.getByName(args[0]);
-                int port = Integer.parseInt(args[1]);
-                int numberOfConnections = Integer.parseInt(args[2]);
+                InetAddress ip = InetAddress.getByName("localhost");
+                int port = Integer.parseInt("8080");
+                int numberOfConnections = Integer.parseInt("1000");
 
                 //start the chat server
                 ChatServer server = new ChatServer(ip, port, numberOfConnections);
                 server.start();
-            }
+            //}
         } catch (Exception e) {
             System.out.println("Failed to create the server instance... system exiting");
             System.out.println(e);
