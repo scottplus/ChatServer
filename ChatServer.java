@@ -26,7 +26,6 @@ public class ChatServer extends Thread implements ServerCallBack {
     
     public void pushDataToClients(String message) {
         //write the message to all clients in the arraylist
-        System.out.println("Pushing data: "+message);
         try{
             for(NetworkObject current : connectedClients) {
                 current.writeToByteStream(message);

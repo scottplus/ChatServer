@@ -48,14 +48,13 @@ public class NetworkObject extends Thread {
     
     public void writeToByteStream(String message) throws IOException {
         //write to the connected client
-        System.out.println("Writing data: "+message);
+        System.out.println(message);
         output.writeUTF(message);
         output.flush();
     }
     
     public void listenForNewMessages() throws IOException {
         while(running) {
-            System.out.println("Listening for messages");
             //listen for new messages, call back the server when a new message arrives
             message = input.readUTF();
             //assemble the message and send it to the server
