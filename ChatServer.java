@@ -15,22 +15,9 @@ public class ChatServer extends Thread implements ServerCallBack {
     ArrayList<NetworkObject> connectedClients;
     boolean running = false;
     
-    ChatServer(InetAddress ip, int port, int numberOfConnections) throws IOException {
-        //initialize the objects
-        hostServer = new ServerSocket(port, numberOfConnections, ip);   
-        connectedClients = new ArrayList<NetworkObject>();
-    }
+    //CALLBACK INTERFACE METHODS
     
-    public void run() {
-        try {
-            //keep connections alive and add to the ArrayList
-            running = true; System.out.println("Listening for clients");
-            listenForClients();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void serverControls(int command) {
         
     }
     
@@ -54,6 +41,27 @@ public class ChatServer extends Thread implements ServerCallBack {
         }
     }
     
+    //SETUP METHODS
+    
+    ChatServer(InetAddress ip, int port, int numberOfConnections) throws IOException {
+        //initialize the objects
+        hostServer = new ServerSocket(port, numberOfConnections, ip);   
+        connectedClients = new ArrayList<NetworkObject>();
+    }
+    
+    public void run() {
+        try {
+            //keep connections alive and add to the ArrayList
+            running = true; System.out.println("Listening for clients");
+            listenForClients();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
     public static void main(String[] args) {
         //EXAMPLE INPUT == "128.67.80.24" "8080" "1000"
         try {
@@ -75,6 +83,5 @@ public class ChatServer extends Thread implements ServerCallBack {
         }
         
     }
-
  
 }

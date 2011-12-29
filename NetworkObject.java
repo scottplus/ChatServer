@@ -16,7 +16,7 @@ public class NetworkObject extends Thread {
     ServerCallBack server;
     BufferedReader input;
     DataOutputStream output;
-    
+    boolean running = false;
     
     NetworkObject(Socket connectionToClient, ServerCallBack server) throws IOException {
         //handshake to the server, setup data streams
@@ -35,6 +35,10 @@ public class NetworkObject extends Thread {
             username = input.readLine();
             message = "Welcome to the server, "+username+"!";
             writeToByteStream(message);
+            
+            //start listening for client messages
+            running = true;
+            listenForNewMessages();
         } catch (IOException ex) {
             Logger.getLogger(NetworkObject.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -46,9 +50,11 @@ public class NetworkObject extends Thread {
     }
     
     public void listenForNewMessages() throws IOException {
-        //listen for new messages, call back the server when a new message arrives
-        message = input.readLine();
-        //assemble the message and send it to the server
-        server.pushDataToClients(this.username+": "+this.message);
+        while(running) {
+            //listen for new messages, call back the server when a new message arrives
+            message = input.readLine();
+            //assemble the message and send it to the server
+            server.pushDataToClients(this.username+": "+this.message);
+        }
     }
 }
