@@ -50,5 +50,5 @@ public class NetworkObject extends Thread {
         message = input.readLine();
         //assemble the message and send it to the server
         server.pushDataToClients(this.username+": "+this.message);
-    }   
+    }
 }
