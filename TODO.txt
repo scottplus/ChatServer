@@ -1,0 +1,16 @@
+TODO:
+
+- handle exceptions on Client.java input streams when server crashes/input stream fails
+
+- allow Client.java to close properly when window is closed, see jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE), maybe rewrite in JFrame? Handle key events by implementing KeyListener? Have a think on this design maybe best to leave it
+
+- close byte streams on Client.java side when the ./quit command is used
+
+- show available API on ./help
+
+- add to API
+
+- store remote IP addresses against usernames? Not sure what use this would be but yeah.
+
+- private messages? Can use overridden broadcast messages, display in pink for private? Or startup new Client.java? This can be later on down the road
+

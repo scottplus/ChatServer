@@ -5,7 +5,6 @@ import java.io.*;
 import java.util.*;
 
 public class NetworkObject extends Thread {
-
     Socket connectionToClient;
     DataInputStream i;
     DataOutputStream o;
@@ -20,22 +19,22 @@ public class NetworkObject extends Thread {
     
     //running program
     
-    public NetworkObject(Socket connectionToClient, int index) throws IOException {
+    public NetworkObject(Socket connectionToClient) throws IOException {
         //handshake to the server, setup data streams
         this.connectionToClient = connectionToClient;
         
-        //keep a copy of the index so we can use the API
-        this.index = index;
-        
         //set the anonymous username
-        username = "Anonymous";
+        username = "Anonymous"+index;
         
         //byte streams
         i = new DataInputStream(new BufferedInputStream(connectionToClient.getInputStream()));
         o = new DataOutputStream(new BufferedOutputStream(connectionToClient.getOutputStream()));
     }
 
-    public void run() {
+    public void run() { 
+        //index is the size of the array currently
+        index = handlers.size();
+        
         //add the current instance to the static vector
         handlers.insertElementAt(this, this.index);
         
@@ -53,33 +52,36 @@ public class NetworkObject extends Thread {
                 
                 if(msg.substring(0,2).equals("./")) {
                     //if message is a command, call the api
-                    userControl(msg);                    
+                    control(msg);                    
                 } else {
                     //else send the message
                     broadcast(this.username+": "+msg);                    
                 }
             }
         } catch (IOException e){
-            e.printStackTrace();            
-        }        
+            //catch the IOException to handle the dropped byte stream when a user disconnects
+            broadcast("Server the user "+username+" has disconnected from the server");
+            System.out.println("The user: "+username+" has disconnected from the server");     
+        }
     }
     
     //API, decode text from the user input and drop connections safely from the vector
     
     //ways to decode the user's message
     
-    public void userControl(String month) {
+    public void control(String month) {
         //need to change to switch statement, JDK 7 required ***************************************************************************
         
         NetworkObject current = (NetworkObject) handlers.get(index);
         
         try {
             //if the user types './quit'
-            if(month.toLowerCase().equals("./quit")) {
+            if(month.toLowerCase().contains("./quit")) {
                 //quit the server
                 
                 //let the users know they have disconnected
-                broadcast("The user: "+username+" has disconnected from the server");
+                broadcast("Server: The user "+username+" has disconnected from the server");
+                System.out.println("The user: "+username+" has disconnected from the server");
                 
                 //stop listening for messages
                 running = false;
@@ -91,14 +93,19 @@ public class NetworkObject extends Thread {
                 //remove it from the vector
                 handlers.remove(index);
                 
-                //exit the network object
-                //System.exit(1);
-            } else if(month.toLowerCase().substring(0,10).equals("./username")) {
+            } else if(month.toLowerCase().contains("./username")) {
                 //change the username
-                this.username = month.substring(11,month.length());
+                String tempUsername = this.username;
+                
+                this.username = month.substring("./username ".length(),month.length());
+                
+                //broadcast to all users
+                broadcast("Server: "+tempUsername + " has changed their username to "+this.username);
+                System.out.println("Server: "+tempUsername + " has changed their username to "+this.username);
             } else {
                 //if no API call available broadcast to the calling index
                 NetworkObject.broadcast("Server: No API call under that name, please try again", index);
+                System.out.println(this.username + " attempted an illegal API call");
             }
             
         } catch (IOException e) {
@@ -108,6 +115,7 @@ public class NetworkObject extends Thread {
 
     //send to all the instances of NetworkObject
    private static void broadcast(String message) {
+       //synchronize the vector
         synchronized (handlers) {
             Enumeration e = handlers.elements();
             while (e.hasMoreElements()) {
@@ -122,9 +130,9 @@ public class NetworkObject extends Thread {
         }
     }
     
- //send to specific instance of NetworkObject
+    //send to specific instance of NetworkObject
     private static void broadcast(String message, int index) {
-        //due to static method, synchronize the block
+        //static method synchronize the NetworkObject
         NetworkObject c = (NetworkObject) handlers.get(index);
         synchronized (c) {
             //write 
@@ -132,7 +140,7 @@ public class NetworkObject extends Thread {
                 c.o.writeUTF(message);
                 c.o.flush();
             } catch (IOException ex) {
-                    c.stop();
+                   // control("./quit");
             }
          }
     }

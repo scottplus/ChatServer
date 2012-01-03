@@ -8,21 +8,17 @@ public class ChatServer
     {
         //create the server socket
         ServerSocket server = new ServerSocket(port);
-        
-        //index for aligning the array
-        int index = 0;
-        
+
+        System.out.println("Listening for clients");
         while(true)
         {
-            Socket client = server.accept();
+            //wait for clients
+            Socket client = server.accept(); //blocking IO
             System.out.println("Accepted from " + client.getInetAddress());
-            NetworkObject netObject = new NetworkObject(client, index);
+            NetworkObject netObject = new NetworkObject(client);
             
             //start the network object
             netObject.start();
-            
-            //increment the index
-            index++;
         }
     }
     
