@@ -1,65 +1,59 @@
-package chatserver;
+//package chatserver;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.*;
+import java.io.*;
+import java.util.*;
 
 public class NetworkObject extends Thread {
-    String username;
-    String message;
+
     Socket connectionToClient;
-    ServerCallBack server;
-    BufferedReader input;
-    BufferedWriter output;
+    DataInputStream i;
+    DataOutputStream o;
     boolean running = false;
-    
-    NetworkObject(Socket connectionToClient, ServerCallBack server) throws IOException {
+    private static Vector handlers = new Vector();
+
+    public NetworkObject(Socket connectionToClient) throws IOException {
         //handshake to the server, setup data streams
-        this.connectionToClient = connectionToClient; 
-        //reference to the server, this is the callback method
-        this.server = server;
-        
+        this.connectionToClient = connectionToClient;
+        //reference to the server, this is the callback method        
         //byte streams
-        input = new BufferedReader(new InputStreamReader(connectionToClient.getInputStream()));
-        output = new BufferedWriter(new OutputStreamWriter(connectionToClient.getOutputStream()));
+        i = new DataInputStream(new BufferedInputStream(connectionToClient.getInputStream()));
+        o = new DataOutputStream(new BufferedOutputStream(connectionToClient.getOutputStream()));
     }
-    
+
     public void run() {
         try {
-            //send the client a welcome message
-            username = input.readLine();
-            message = "Welcome to the server, "+username+"!";
-            writeToByteStream(message);
-            
-            //start listening for client messages
-            running = true;
-            listenForNewMessages();
+            handlers.addElement(this);
+            while (true) {
+                String msg = i.readUTF();
+                broadcast(msg);
+            }
         } catch (IOException ex) {
-            Logger.getLogger(NetworkObject.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        } finally {
+            handlers.removeElement(this);
+            try {
+                connectionToClient.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
-    
-    public void writeToByteStream(String message) throws IOException {
-        //write to the connected client
-        System.out.println("Writing data: "+message);
-        output.write(message);
-        output.flush();
-    }
-    
-    public void listenForNewMessages() throws IOException {
-        while(running) {
-            System.out.println("Listening for messages");
-            //listen for new messages, call back the server when a new message arrives
-            message = input.readLine();
-            //assemble the message and send it to the server
-            server.pushDataToClients(this.username+": "+this.message);
+
+    private static void broadcast(String message) {
+        synchronized (handlers) {
+            Enumeration e = handlers.elements();
+            while (e.hasMoreElements()) {
+                NetworkObject c = (NetworkObject) e.nextElement();
+                try {
+                    synchronized (c.o) {
+                        c.o.writeUTF(message);
+                    }
+                    c.o.flush();
+                } catch (IOException ex) {
+                    c.stop();
+                }
+            }
         }
     }
 }

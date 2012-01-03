@@ -1,56 +1,82 @@
-package chatserver;
+//package chatserver;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.*;
+import java.io.*;
+import java.awt.*;
 
-public class Client implements Runnable {
-	Socket socket;
-        BufferedReader input, userInput;
-        BufferedWriter output;
-        
-        String message, username;
-        
-        boolean running = false;
-	
-	Client() throws IOException {
-            //setup byte streams and connect to server
-            socket = new Socket("localhost",8080);
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            
-            //set up scanner to take user input
-            userInput = new BufferedReader(new InputStreamReader(System.in));
-        }
-        
-        public void run() {
+public class Client extends Frame implements Runnable {
+
+    private DataInputStream i;
+    private DataOutputStream o;
+    private TextArea output;
+    private TextField input;
+    private Thread listener;
+
+    public Client(String title, InputStream i, OutputStream o) {
+        super(title);
+        this.i = new DataInputStream(new BufferedInputStream(i));
+        this.o = new DataOutputStream(new BufferedOutputStream(o));
+        setLayout(new BorderLayout());
+        add("Center", output = new TextArea());
+        output.setEditable(false);
+        add("South", input = new TextField());
+        pack();
+        show();
+        input.requestFocus();
+        listener = new Thread(this);
+        listener.start();
+    }
+
+    public void run() {
+        try {
+            while (true) {
+                String line = i.readUTF();
+                output.appendText(line + "\n");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            listener = null;
+            input.hide();
+            validate();
             try {
-                System.out.println("Connected to the server: "+socket.getInetAddress() + " On the port" + socket.getPort());
-                System.out.println("Please enter your username: ");
-                username = userInput.readLine();
-                pushDataToServer(username);
-                running = true;
+                o.close();
             } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
             }
         }
-        
-        private void pushDataToServer(String message) throws IOException {
-            output.write(message);
-            output.flush();
+    }
+
+    public boolean handleEvent(Event e) {
+        if ((e.target == input) && (e.id == Event.ACTION_EVENT)) {
+            try {
+                o.writeUTF((String) e.arg);
+                o.flush();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                listener.stop();
+            }
+            input.setText("");
+            return true;
+        } else if ((e.target == this) && (e.id == Event.WINDOW_DESTROY)) {
+            if (listener != null) {
+                listener.stop();
+            }
+            hide();
+            return true;
         }
-        
-	public static void main(String[] args)  throws IOException {
-		Client client = new Client();
-                client.run();
-	}
+        return super.handleEvent(e);
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        Socket s = new Socket("localhost", 6666);
+        new Client("Chat LOCALHOST: 6666", s.getInputStream(),
+                s.getOutputStream());
+
+        /*Socket s = new Socket(args[0], Integer.parseInt(args[1]));
+        new Client("Chat " + args[0] + ":" + args[1],
+        s.getInputStream(), s.getOutputStream());
+         */
+    }
 }
