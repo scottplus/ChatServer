@@ -45,6 +45,7 @@ public class NetworkObject extends Thread {
         listen();
     }
     
+    //listen for incomming messages
     private synchronized void listen() {
         try {
             while(running) {
@@ -65,10 +66,7 @@ public class NetworkObject extends Thread {
         }
     }
     
-    //API, decode text from the user input and drop connections safely from the vector
-    
-    //ways to decode the user's message
-    
+    //control method for user-server interaction
     public void control(String month) {
         //need to change to switch statement, JDK 7 required ***************************************************************************
         

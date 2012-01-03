@@ -14,3 +14,5 @@ TODO:
 
 - private messages? Can use overridden broadcast messages, display in pink for private? Or startup new Client.java? This can be later on down the road
 
+- map username to index? e.g kick 'USERNAME'
+
