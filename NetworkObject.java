@@ -94,10 +94,11 @@ public class NetworkObject extends Thread {
                 //exit the network object
                 //System.exit(1);
             } else if(month.toLowerCase().substring(0,10).equals("./username")) {
-                System.out.println("Entered the method");
-                this.username = month.substring(10,month.length());
+                //change the username
+                this.username = month.substring(11,month.length());
             } else {
-                
+                //if no API call available broadcast to the calling index
+                NetworkObject.broadcast("Server: No API call under that name, please try again", index);
             }
             
         } catch (IOException e) {
@@ -121,7 +122,7 @@ public class NetworkObject extends Thread {
         }
     }
     
-  /*  //send to specific instance of NetworkObject
+ //send to specific instance of NetworkObject
     private static void broadcast(String message, int index) {
         //due to static method, synchronize the block
         NetworkObject c = (NetworkObject) handlers.get(index);
@@ -132,7 +133,7 @@ public class NetworkObject extends Thread {
                 c.o.flush();
             } catch (IOException ex) {
                     c.stop();
-                }
+            }
          }
-    } */
+    }
 }
