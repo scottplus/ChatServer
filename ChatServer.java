@@ -15,7 +15,7 @@ public class ChatServer
             //wait for clients
             Socket client = server.accept(); //blocking IO
             System.out.println("Accepted from " + client.getInetAddress());
-            NetworkObject netObject = new NetworkObject(client);
+            ChatHandler netObject = new ChatHandler(client);
             
             //start the network object
             netObject.start();

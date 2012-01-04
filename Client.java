@@ -14,8 +14,8 @@ public class Client extends Frame implements Runnable {
     
     boolean running = false;
 
-    public Client(String title, InputStream i, OutputStream o) {
-        super(title);
+    public Client(String userName, InputStream i, OutputStream o) {
+        super(userName);
         this.i = new DataInputStream(new BufferedInputStream(i));
         this.o = new DataOutputStream(new BufferedOutputStream(o));
         setLayout(new BorderLayout());
@@ -48,19 +48,7 @@ public class Client extends Frame implements Runnable {
             }
         }
     }
-
-    /* private void listen() {
-        try {
-            while(running) {
-                String line = i.readUTF();
-                output.appendText(line + "\n");
-            }
-            
-        } catch (IOException e) {
-                e.printStackTrace();            
-        }
-    } */
-
+    
     public boolean handleEvent(Event e) {
         if ((e.target == input) && (e.id == Event.ACTION_EVENT)) {
             try {
