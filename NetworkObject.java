@@ -11,6 +11,9 @@ public class NetworkObject extends Thread {
     boolean running = false;
     private static Vector handlers = new Vector();
     
+    //commands available to the API
+    String commands[] = {"./quit","./username", "./help"};
+    
     //index
     int index;
     
@@ -22,10 +25,7 @@ public class NetworkObject extends Thread {
     public NetworkObject(Socket connectionToClient) throws IOException {
         //handshake to the server, setup data streams
         this.connectionToClient = connectionToClient;
-        
-        //set the anonymous username
-        username = "Anonymous"+index;
-        
+                
         //byte streams
         i = new DataInputStream(new BufferedInputStream(connectionToClient.getInputStream()));
         o = new DataOutputStream(new BufferedOutputStream(connectionToClient.getOutputStream()));
@@ -37,6 +37,9 @@ public class NetworkObject extends Thread {
         
         //add the current instance to the static vector
         handlers.insertElementAt(this, this.index);
+        
+        //set the anonymous username
+        username = "Anonymous"+index;
         
         //set our boolean
         running = true;
@@ -100,7 +103,21 @@ public class NetworkObject extends Thread {
                 //broadcast to all users
                 broadcast("Server: "+tempUsername + " has changed their username to "+this.username);
                 System.out.println("Server: "+tempUsername + " has changed their username to "+this.username);
-            } else {
+            } else if(month.toLowerCase().contains("./help")) {
+                //display commands available to the user
+                
+                //display string
+                String output = "Server: Commands available are \n ";
+                
+                //append the strings
+                for(String append: this.commands) {
+                    output += append + "\n";
+                }
+                
+                //broadcast to the user
+                NetworkObject.broadcast(output);
+                
+            }else {
                 //if no API call available broadcast to the calling index
                 NetworkObject.broadcast("Server: No API call under that name, please try again", index);
                 System.out.println(this.username + " attempted an illegal API call");

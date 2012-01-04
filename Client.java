@@ -11,6 +11,8 @@ public class Client extends Frame implements Runnable {
     private TextArea output;
     private TextField input;
     private Thread listener;
+    
+    boolean running = false;
 
     public Client(String title, InputStream i, OutputStream o) {
         super(title);
@@ -46,6 +48,18 @@ public class Client extends Frame implements Runnable {
             }
         }
     }
+
+    /* private void listen() {
+        try {
+            while(running) {
+                String line = i.readUTF();
+                output.appendText(line + "\n");
+            }
+            
+        } catch (IOException e) {
+                e.printStackTrace();            
+        }
+    } */
 
     public boolean handleEvent(Event e) {
         if ((e.target == input) && (e.id == Event.ACTION_EVENT)) {
