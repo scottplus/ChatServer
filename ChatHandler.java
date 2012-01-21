@@ -1,29 +1,26 @@
-//package chatserver;
-
 import java.net.*;
 import java.io.*;
 import java.util.*;
 
-public class ChatHandler extends Thread {
-    
+public class ChatHandler extends Thread 
+{
     private Socket connectionToClient;
     private DataInputStream i;
     private DataOutputStream o;
     private boolean running = false;
-    private static Vector handlers = new Vector();
-    
+    private static ArrayList<ChatHandler> handler = new ArrayList<ChatHandler>();
+    private int index = 0;
     //commands available to the API
-    private String commands[] = {"./quit","./username", "./help"};
-    
-    //index
-    private int index;
-    
+    private String commands[] = {"./quit","./username", "./help"};   
     //username
     private String username;
     
-    //running program
-
-    public ChatHandler(Socket connection) throws IOException {
+    public static ChatHandler add(Socket connection) throws IOException
+    {
+        return new ChatHandler(connection);
+    }
+    private ChatHandler(Socket connection) throws IOException 
+    {
         //handshake to the server, setup data streams
         this.connectionToClient = connection;
                 
@@ -32,27 +29,24 @@ public class ChatHandler extends Thread {
         o = new DataOutputStream(new BufferedOutputStream(connectionToClient.getOutputStream()));
     }
 
-    public void run() { 
-        //index is the size of the array currently
-        index = handlers.size();
-        
+    public void run() 
+    {     
         //add the current instance to the static vector
-        handlers.insertElementAt(this, this.index);
+        handler.add(this);
         
         //set the anonymous username
-        username = "guest";
+        username = "guest" + index;
         
-        //set our boolean
-        running = true;
         
         //listen for incomming messages
         listen();
     }
     
     //listen for incomming messages
-    private synchronized void listen() {
+    private synchronized void listen() 
+    {
         try {
-            while(running) {
+            while(true) {
                 String msg = i.readUTF(); //blocking IO call
                 
                 if(msg.substring(0,2).equals("./")) {
@@ -74,8 +68,8 @@ public class ChatHandler extends Thread {
     public void control(String month) {
         //need to change to switch statement, JDK 7 required ***************************************************************************
         
-        ChatHandler current = (ChatHandler) handlers.get(index);
-        
+        ChatHandler current = (ChatHandler) handler.get(index);
+
         try {
             //if the user types './quit'
             if(month.toLowerCase().contains("./quit")) {
@@ -83,7 +77,6 @@ public class ChatHandler extends Thread {
                 
                 //let the users know they have disconnected
                 broadcast("Server: The user "+username+" has disconnected from the server");
-                System.out.println("The user: "+username+" has disconnected from the server");
                 
                 //stop listening for messages
                 running = false;
@@ -93,7 +86,7 @@ public class ChatHandler extends Thread {
                 current.o.close();
                 
                 //remove it from the vector
-                handlers.remove(index);
+                handler.remove(index);
                 
             } else if(month.toLowerCase().contains("./username")) {
                 //change the username
@@ -103,7 +96,6 @@ public class ChatHandler extends Thread {
                 
                 //broadcast to all users
                 broadcast("Server: "+tempUsername + " has changed their username to "+username);
-                System.out.println("Server: "+tempUsername + " has changed their username to "+username);
             } else if(month.toLowerCase().contains("./help")) {
                 //display commands available to the user
                 
@@ -116,12 +108,11 @@ public class ChatHandler extends Thread {
                 }
                 
                 //broadcast to the user
-                ChatHandler.broadcast(output);
+                ChatHandler.broadcast(output, index);
                 
             }else {
                 //if no API call available broadcast to the calling index
                 ChatHandler.broadcast("Server: No API call under that name, please try again", index);
-                System.out.println(username + " attempted an illegal API call");
             }
             
         } catch (IOException e) {
@@ -132,8 +123,8 @@ public class ChatHandler extends Thread {
     //send to all the instances of NetworkObject
    private static void broadcast(String message) {
        //synchronize the vector
-        synchronized (handlers) {
-            Enumeration e = handlers.elements();
+        synchronized (handler) {
+            Enumeration e = Collections.enumeration(handler);
             while (e.hasMoreElements()) {
                 ChatHandler c = (ChatHandler) e.nextElement();
                 try {
@@ -149,7 +140,7 @@ public class ChatHandler extends Thread {
     //send to specific instance of NetworkObject
     private static void broadcast(String message, int index) {
         //static method synchronize the NetworkObject
-        ChatHandler c = (ChatHandler) handlers.get(index);
+        ChatHandler c = (ChatHandler) handler.get(index);
         synchronized (c) {
             //write 
             try {
